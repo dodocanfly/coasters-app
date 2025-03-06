@@ -38,14 +38,18 @@ System Kolejek Górskich to API do zarządzania kolejkami górskimi oraz przypis
    docker compose -f docker-compose-prod.yml up -d
    ```
 
-5. **Start serwera lokalnego:**
-   ```sh
-   php spark serve
+   ```shell
+   composer install
    ```
+
+   ```shell
+   http://127.0.0.1:8080/
+   ```
+
 
 ## Dokumentacja API
 ### 1. Rejestracja nowej kolejki górskiej
-**Endpoint:** `POST /api/coasters`
+**Endpoint:** `POST http://127.0.0.1:8080/api/coasters`
 
 **Przykładowe żądanie:**
 ```json
@@ -59,7 +63,7 @@ System Kolejek Górskich to API do zarządzania kolejkami górskimi oraz przypis
 ```
 
 ### 2. Rejestracja nowego wagonu
-**Endpoint:** `POST /api/coasters/:coasterId/wagons`
+**Endpoint:** `POST http://127.0.0.1:8080/api/coasters/:coasterId/wagons`
 
 **Przykładowe żądanie:**
 ```json
@@ -70,10 +74,10 @@ System Kolejek Górskich to API do zarządzania kolejkami górskimi oraz przypis
 ```
 
 ### 3. Usunięcie wagonu
-**Endpoint:** `DELETE /api/coasters/:coasterId/wagons/:wagonId`
+**Endpoint:** `DELETE http://127.0.0.1:8080/api/coasters/:coasterId/wagons/:wagonId`
 
 ### 4. Zmiana danych kolejki
-**Endpoint:** `PUT /api/coasters/:coasterId`
+**Endpoint:** `PUT http://127.0.0.1:8080/api/coasters/:coasterId`
 
 Zmienić można wszystkie dane poza długością trasy.
 
@@ -87,7 +91,7 @@ Zmienić można wszystkie dane poza długością trasy.
 - Dane są odseparowane od środowiska deweloperskiego
 
 ## Monitorowanie i statystyki
-Aplikacja udostępnia asynchroniczny serwis CLI do monitorowania systemu w czasie rzeczywistym. Można użyć np. `ReactPHP` do obsługi Redis w trybie asynchronicznym.
+Aplikacja udostępnia asynchroniczny serwis CLI do monitorowania systemu w czasie rzeczywistym.
 
    ```sh
    php spark monitor:start
