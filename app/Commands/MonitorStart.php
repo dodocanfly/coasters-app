@@ -68,7 +68,7 @@ class MonitorStart extends BaseCommand
 
         CLI::write('Starting CoastersApp monitoring service...', 'green');
         CLI::write('Press Ctrl+C to stop or run "php spark monitor:stop" from another terminal', 'yellow');
-//        CLI::wait(5, true);
+        CLI::wait(5, true);
 
         /** @var MonitoringService $monitoringService */
         $monitoringService = service('monitoringService');
