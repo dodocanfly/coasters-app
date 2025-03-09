@@ -14,76 +14,110 @@ class CoasterProcessor
     private const DEFAULT_WAGON_CAPACITY = 20;
     private const DEFAULT_WAGON_SPEED = 1;
 
-    /** in meters per second */
-    private float $lowestWagonSpeed = 0;
-    private int $calculatedDailyCoasterCapacity = 0;
+    private int $calculatedCapacity;
     private int $numberOfWagons;
-    private int $averageWagonCapacity = 0;
-    private int $totalWagonsCapacity = 0;
-    private int $numberOfRidesPerDay = 0;
+    private int $numberOfRidesPerDay;
+    private array $wagonSpeedList = [];
+    private array $wagonCapacityList = [];
     private array $statusList = [];
 
     /** @param Wagon[] $wagons */
-    private function __construct(
+    public function __construct(
         private readonly Coaster $coaster,
         private readonly array $wagons
     ) {
-    }
-
-    /** @param Wagon[] $wagons */
-    public static function build(Coaster $coaster, array $wagons): self
-    {
-        $processor = new self($coaster, $wagons);
-
-        $processor->processWagons();
-        $processor->processCoaster();
-
-        return $processor;
+        $this->processWagons();
+        $this->processCoaster();
     }
 
     public function getHeader(): string
     {
-        return '[ Kolejka ' . $this->coaster->getId() . ' - dł. ' . $this->coaster->getRouteLength() . 'm ]';
+        return sprintf(
+            '[ %s - Kolejka %s - dł. %dm, pr. %.1fm/s ]',
+            date('H:i'),
+            $this->coaster->getId(),
+            $this->coaster->getRouteLength(),
+            $this->getLowestWagonSpeed()
+        );
     }
 
     public function getCliReport(): string
     {
-        $txt = '1. Godziny działania: ' . $this->coaster->getOpeningTime() . ' - ' . $this->coaster->getClosingTime() . "\n";
-        $txt .= '2. Liczba wagonów: ' . $this->getAvailableWagons() . ' dostępnych / ' . $this->getRequiredWagons() . ' wymaganych (średniej pojemności)' . "\n";
-        $txt .= '   - prędkość najwolniejszego wagonu: ' . $this->lowestWagonSpeed . ' (m/s)' . "\n";
-        $txt .= '   - maksymalna liczba przejazdów: ' . $this->numberOfRidesPerDay . "\n";
-        $txt .= '   - średnia pojemność wagonu: ' . $this->averageWagonCapacity . "\n";
-        $txt .= '   - łączna pojemność wszystkich wagonów: ' . $this->totalWagonsCapacity . "\n";
-        $txt .= '   - maksymalna dzienna przepustowość: ' . $this->getTotalDailyCapacity() . "\n";
-        $txt .= '3. Liczba personelu: ' . $this->getAvailableStaff() . ' dostępnych / ' . $this->getRequiredStaff() . ' wymaganych' . "\n";
-        $txt .= '   - możliwe do obsłużenia wagony: ' . $this->getNumberOfWagonsPossibleToHandle() . "\n";
-        $txt .= '4. Spodziewana liczba klientów: ' . $this->coaster->getNumberOfClients() . "\n";
+        $data = [
+            '{nl}' => PHP_EOL,
+            '{openingTime}' => $this->coaster->getOpeningTime(),
+            '{closingTime}' => $this->coaster->getClosingTime(),
+            '{availableWagons}' => $this->getAvailableWagons(),
+            '{requiredWagons}' => $this->getRequiredWagons(),
+            '{lowestWagonSpeed}' => $this->getLowestWagonSpeed(),
+            '{numberOfRidesPerDay}' => $this->getNumberOfRidesPerDay(),
+            '{averageWagonCapacity}' => $this->getAverageWagonCapacity(),
+            '{totalWagonsCapacity}' => $this->getTotalWagonsCapacity(),
+            '{totalDailyCapacity}' => $this->getCalculatedCoasterCapacity(),
+            '{availableStaff}' => $this->getAvailableStaff(),
+            '{requiredStaff}' => $this->getRequiredStaff(),
+            '{numberOfWagonsPossibleToHandle}' => $this->getNumberOfWagonsPossibleToHandle(),
+            '{numberOfClients}' => $this->coaster->getNumberOfClients(),
+            '{status}' => $this->getStatus(),
+        ];
 
+        $template = '1. Godziny działania: {openingTime} - {closingTime}{nl}' .
+            '2. Liczba wagonów: {availableWagons} dostępnych / {requiredWagons} wymaganych (średniej pojemności){nl}' .
+            '   - prędkość najwolniejszego wagonu: {lowestWagonSpeed} (m/s){nl}' .
+            '   - maksymalna liczba przejazdów: {numberOfRidesPerDay}{nl}' .
+            '   - średnia pojemność wagonu: {averageWagonCapacity}{nl}' .
+            '   - łączna pojemność wszystkich wagonów: {totalWagonsCapacity}{nl}' .
+            '   - maksymalna dzienna przepustowość: {totalDailyCapacity}{nl}' .
+            '3. Liczba personelu: {availableStaff} dostępnych / {requiredStaff} wymaganych{nl}' .
+            '   - możliwe do obsłużenia wagony: {numberOfWagonsPossibleToHandle}{nl}' .
+            '4. Spodziewana liczba klientów: {numberOfClients}{nl}' .
+            '5. STATUS: {status}{nl}' .
+            '--------------------------------------------------------------------------------';
+
+        return strtr($template, $data);
+    }
+
+    public function getStatus(): string
+    {
         if (empty($this->statusList)) {
-            $txt .= '5. STATUS: OK' . "\n";
-        } else {
-            $txt .= '5. STATUS: PROBLEM - ' . implode(', ', $this->statusList) . "\n";
+            return 'OK';
         }
 
-        $txt .= str_pad('', 80, '-');
-
-        return $txt;
+        return 'PROBLEM - ' . implode(', ', $this->statusList);
     }
 
     public function getLogReport(): string
     {
-        return 'Kolejka ' . $this->coaster->getId() . ', ' .
-            'godz. ' . $this->coaster->getOpeningTime() . '-' . $this->coaster->getClosingTime() . ', ' .
-            'dł. ' . $this->coaster->getRouteLength() . 'm, ' .
-            'personel: ' . $this->getAvailableStaff() . ' / ' . $this->getRequiredStaff() . ', ' .
-            'klienci: ' . $this->coaster->getNumberOfClients() . ', ' .
-            'wagony: ' . $this->getAvailableWagons() . ' / ' . $this->getRequiredWagons() . ', ' .
-            'PROBLEM: ' . implode(', ', $this->statusList);
+        return sprintf(
+            'Kolejka %s, godz. %s - %s, dł. %dm, personel: %d / %d, klienci: %d, wagony: %d / %d, PROBLEM: %s',
+            $this->coaster->getId(),
+            $this->coaster->getOpeningTime(),
+            $this->coaster->getClosingTime(),
+            $this->coaster->getRouteLength(),
+            $this->getAvailableStaff(),
+            $this->getRequiredStaff(),
+            $this->coaster->getNumberOfClients(),
+            $this->getAvailableWagons(),
+            $this->getRequiredWagons(),
+            implode(', ', $this->statusList)
+        );
     }
 
     public function isError(): bool
     {
         return !empty($this->statusList);
+    }
+
+    private function processWagons(): void
+    {
+        $this->wagonSpeedList = [];
+        $this->wagonCapacityList = [];
+        $this->numberOfWagons = count($this->wagons);
+
+        foreach ($this->wagons as $wagon) {
+            $this->wagonSpeedList[] = $wagon->getSpeed();
+            $this->wagonCapacityList[] = $wagon->getCapacity();
+        }
     }
 
     private function processCoaster(): void
@@ -102,33 +136,35 @@ class CoasterProcessor
 
     }
 
-    private function processWagons(): void
+    private function notEnoughWagons(): bool
     {
-        $wagonSpeedList = [];
-        $wagonCapacityList = [];
-        $this->numberOfWagons = count($this->wagons);
+        return $this->coaster->getNumberOfClients() > $this->getCalculatedCoasterCapacity();
+    }
 
-        foreach ($this->wagons as $wagon) {
-            $wagonSpeedList[] = $wagon->getSpeed();
-            $wagonCapacityList[] = $wagon->getCapacity();
-        }
+    private function tooHighCoasterCapacity(): bool
+    {
+        return $this->getCalculatedCoasterCapacity() > ($this->coaster->getNumberOfClients() * 2)
+            && !$this->notEnoughStaff();
+    }
 
-        $this->totalWagonsCapacity = array_sum($wagonCapacityList);
+    private function getWagonsDifference(): int
+    {
+        return abs($this->getAvailableWagons() - $this->getRequiredWagons());
+    }
 
-        if ($this->numberOfWagons === 0) {
-            $this->averageWagonCapacity = self::DEFAULT_WAGON_CAPACITY;
-            $this->lowestWagonSpeed = self::DEFAULT_WAGON_SPEED;
-        } else {
-            $this->averageWagonCapacity = round($this->totalWagonsCapacity / $this->numberOfWagons);
-            $this->lowestWagonSpeed = min($wagonSpeedList);
-        }
+    private function notEnoughStaff(): bool
+    {
+        return $this->getAvailableStaff() < $this->getRequiredStaff();
+    }
 
-        $speedInMetersPerMinute = 60 * $this->lowestWagonSpeed;
-        $approxRideTimeInMinutes = $this->coaster->getRouteLength() / $speedInMetersPerMinute;
-        $approxTotalCycleTimeInMinutes = $approxRideTimeInMinutes + self::BREAK_TIME;
-        $this->numberOfRidesPerDay = floor($this->coaster->getWorkingTimeInMinutes() / $approxTotalCycleTimeInMinutes);
+    private function tooMuchStaff(): bool
+    {
+        return $this->getAvailableStaff() > $this->getRequiredStaff();
+    }
 
-        $this->calculatedDailyCoasterCapacity = $this->numberOfRidesPerDay * $this->totalWagonsCapacity;
+    private function getStaffDifference(): int
+    {
+        return abs($this->getAvailableStaff() - $this->getRequiredStaff());
     }
 
     private function getAvailableWagons(): int
@@ -138,23 +174,7 @@ class CoasterProcessor
 
     private function getRequiredWagons(): int
     {
-        return ceil($this->coaster->getNumberOfClients() / ($this->numberOfRidesPerDay * $this->averageWagonCapacity));
-    }
-
-    private function getWagonsDifference(): int
-    {
-        return abs($this->getAvailableWagons() - $this->getRequiredWagons());
-    }
-
-    private function notEnoughWagons(): bool
-    {
-        return $this->coaster->getNumberOfClients() > $this->calculatedDailyCoasterCapacity;
-    }
-
-    private function tooHighCoasterCapacity(): bool
-    {
-        return $this->calculatedDailyCoasterCapacity > ($this->coaster->getNumberOfClients() * 2)
-            && !$this->notEnoughStaff();
+        return ceil($this->coaster->getNumberOfClients() / ($this->getNumberOfRidesPerDay() * $this->getAverageWagonCapacity()));
     }
 
     private function getAvailableStaff(): int
@@ -172,24 +192,58 @@ class CoasterProcessor
         return self::STAFF_PER_COASTER + $totalWagons * self::STAFF_PER_WAGON;
     }
 
-    private function getStaffDifference(): int
+    private function getCalculatedCoasterCapacity(): int
     {
-        return abs($this->getAvailableStaff() - $this->getRequiredStaff());
+        if (!isset($this->calculatedCapacity)) {
+            $this->calculatedCapacity = $this->getNumberOfRidesPerDay() * $this->getTotalWagonsCapacity();
+        }
+
+        return $this->calculatedCapacity;
     }
 
-    private function notEnoughStaff(): bool
+    private function getNumberOfRidesPerDay(): int
     {
-        return $this->getAvailableStaff() < $this->getRequiredStaff();
+        if (!isset($this->numberOfRidesPerDay)) {
+            $speedInMetersPerMinute = 60 * $this->getLowestWagonSpeed();
+            $approxRideTimeInMinutes = $this->coaster->getRouteLength() / $speedInMetersPerMinute;
+            $approxTotalCycleTimeInMinutes = $approxRideTimeInMinutes + self::BREAK_TIME;
+            $this->numberOfRidesPerDay = floor($this->coaster->getWorkingTimeInMinutes() / $approxTotalCycleTimeInMinutes);
+        }
+
+        return $this->numberOfRidesPerDay;
     }
 
-    private function tooMuchStaff(): bool
+    private function getAverageWagonCapacity(): float
     {
-        return $this->getAvailableStaff() > $this->getRequiredStaff();
+        if (getenv('CAPACITY_FROM_COASTER')) {
+            return $this->coaster->getWagonCapacity();
+        }
+
+        if ($this->numberOfWagons === 0) {
+            return self::DEFAULT_WAGON_CAPACITY;
+        }
+
+        return round($this->getTotalWagonsCapacity() / $this->numberOfWagons);
     }
 
-    private function getTotalDailyCapacity(): int
+    private function getLowestWagonSpeed(): float
     {
-        return $this->calculatedDailyCoasterCapacity;
+        if (getenv('SPEED_FROM_COASTER')) {
+            return $this->coaster->getWagonSpeed();
+        }
+
+        if ($this->numberOfWagons === 0) {
+            return self::DEFAULT_WAGON_SPEED;
+        }
+
+        return min($this->wagonSpeedList);
+    }
+
+    private function getTotalWagonsCapacity(): int
+    {
+        return getenv('CAPACITY_FROM_COASTER') ?
+            $this->coaster->getWagonCapacity() * $this->numberOfWagons
+            : array_sum($this->wagonCapacityList);
     }
 
     private function getNumberOfWagonsPossibleToHandle(): int
