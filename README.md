@@ -51,11 +51,13 @@ System Kolejek Górskich to API do zarządzania kolejkami górskimi oraz przypis
 ### 1. Rejestracja nowej kolejki górskiej
 **Endpoint:** `POST http://127.0.0.1:8080/api/coasters`
 
-**Przykładowe żądanie:**
+**Przykładowy request:**
 ```json
 {
   "liczba_personelu": 16,
   "liczba_klientow": 60000,
+  "pojemnosc_wagonu": 32,
+  "predkosc": 1.2,
   "dl_trasy": 1800,
   "godziny_od": "08:00",
   "godziny_do": "16:00"
@@ -65,13 +67,20 @@ System Kolejek Górskich to API do zarządzania kolejkami górskimi oraz przypis
 ### 2. Rejestracja nowego wagonu
 **Endpoint:** `POST http://127.0.0.1:8080/api/coasters/:coasterId/wagons`
 
-**Przykładowe żądanie:**
+**Przykładowy request:**
 ```json
 {
   "ilosc_miejsc": 32,
   "predkosc_wagonu": 1.2
 }
 ```
+
+Jeśli w ustawieniach aplikacji (.env) poniższe wartości ustawione są na true:
+```dotenv
+CAPACITY_FROM_COASTER=true
+SPEED_FROM_COASTER=true
+```
+to dane wprowadzone do wagonu nie mają znaczenia na monitorowanie kolejki, a pojemność wagonu/prędkość brane są z danych wprowadzonych w kolejce.
 
 ### 3. Usunięcie wagonu
 **Endpoint:** `DELETE http://127.0.0.1:8080/api/coasters/:coasterId/wagons/:wagonId`

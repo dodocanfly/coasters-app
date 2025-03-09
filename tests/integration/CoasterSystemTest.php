@@ -38,6 +38,8 @@ class CoasterSystemTest extends CIUnitTestCase
             null,
             21,
             600,
+            32,
+            1.2,
             300,
             '09:00',
             '10:00'
@@ -63,6 +65,8 @@ class CoasterSystemTest extends CIUnitTestCase
             null,
             15,
             5000,
+            32,
+            1.2,
             1800,
             '09:00',
             '17:00'

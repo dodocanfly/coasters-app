@@ -62,7 +62,7 @@ class MonitoringService
         foreach ($coasters as $coaster) {
             $wagons = $this->wagonRepository->findByCoasterId($coaster->getId());
 
-            $processor = CoasterProcessor::build($coaster, $wagons);
+            $processor = new CoasterProcessor($coaster, $wagons);
 
             CLI::write($processor->getHeader(), 'cyan');
             CLI::write($processor->getCliReport());

@@ -16,10 +16,10 @@ class ApiCoasterTest extends CIUnitTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->resetServices();
 
         $this->redis = service('redisClient');
         $this->redis->flushDB();
+        $this->resetServices();
     }
 
     public function testUpdateCoaster()
@@ -27,6 +27,8 @@ class ApiCoasterTest extends CIUnitTestCase
         $payload = [
             Coaster::KEY_STAFF => 16,
             Coaster::KEY_CLIENTS => 66666,
+            Coaster::KEY_CAPACITY => 32,
+            Coaster::KEY_SPEED => 1.2,
             Coaster::KEY_LENGTH => 1800,
             Coaster::KEY_HOUR_1 => '08:00',
             Coaster::KEY_HOUR_2 => '16:00',
@@ -39,6 +41,8 @@ class ApiCoasterTest extends CIUnitTestCase
         $updatePayload = [
             Coaster::KEY_STAFF => 20,
             Coaster::KEY_CLIENTS => 70000,
+            Coaster::KEY_CAPACITY => 32,
+            Coaster::KEY_SPEED => 1.2,
             Coaster::KEY_HOUR_1 => '09:00',
             Coaster::KEY_HOUR_2 => '17:00'
         ];
@@ -63,6 +67,8 @@ class ApiCoasterTest extends CIUnitTestCase
         $payload = [
             Coaster::KEY_STAFF => 16,
             Coaster::KEY_CLIENTS => 60000,
+            Coaster::KEY_CAPACITY => 32,
+            Coaster::KEY_SPEED => 1.2,
             Coaster::KEY_LENGTH => 1800,
             Coaster::KEY_HOUR_1 => '08:00',
             Coaster::KEY_HOUR_2 => '16:00'
@@ -107,6 +113,8 @@ class ApiCoasterTest extends CIUnitTestCase
         $updatePayload = [
             Coaster::KEY_STAFF => 20,
             Coaster::KEY_CLIENTS => 70000,
+            Coaster::KEY_CAPACITY => 32,
+            Coaster::KEY_SPEED => 1.2,
             Coaster::KEY_HOUR_1 => '09:00',
             Coaster::KEY_HOUR_2 => '17:00'
         ];
