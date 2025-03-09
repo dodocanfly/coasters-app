@@ -14,13 +14,13 @@ class Wagon
         self::KEY_SPEED => 'required|numeric|greater_than[0]',
     ];
 
-    private string $id;
+    private readonly string $id;
 
     public function __construct(
-        string         $id = null,
-        private string $coasterId = '',
-        private int    $capacity = 0,
-        private float  $speed = 0.0 // m/s
+        string                  $id = null,
+        private readonly string $coasterId = '',
+        private readonly int    $capacity = 0,
+        private readonly float  $speed = 0.0 // m/s
     ) {
         $this->id = $id ?? uniqid('wagon_');
     }
@@ -35,35 +35,14 @@ class Wagon
         return $this->coasterId;
     }
 
-    public function setCoasterId(string $coasterId): self
-    {
-        $this->coasterId = $coasterId;
-
-        return $this;
-    }
-
     public function getCapacity(): int
     {
         return $this->capacity;
     }
 
-    public function setCapacity(int $capacity): self
-    {
-        $this->capacity = $capacity;
-
-        return $this;
-    }
-
     public function getSpeed(): float
     {
         return $this->speed;
-    }
-
-    public function setSpeed(float $speed): self
-    {
-        $this->speed = $speed;
-
-        return $this;
     }
 
     public function toArray(): array
