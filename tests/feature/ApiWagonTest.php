@@ -26,6 +26,8 @@ class ApiWagonTest extends CIUnitTestCase
         $payload = [
             Coaster::KEY_STAFF => 16,
             Coaster::KEY_CLIENTS => 60000,
+            Coaster::KEY_CAPACITY => 32,
+            Coaster::KEY_SPEED => 1.2,
             Coaster::KEY_LENGTH => 1800,
             Coaster::KEY_HOUR_1 => '08:00',
             Coaster::KEY_HOUR_2 => '16:00'

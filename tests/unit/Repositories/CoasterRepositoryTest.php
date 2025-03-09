@@ -32,8 +32,10 @@ class CoasterRepositoryTest extends CIUnitTestCase
             'test_coaster',
             10,
             5000,
+            32,
+            1.2,
             1800,
-            '8:00',
+            '08:00',
             '16:00'
         );
 
@@ -60,8 +62,10 @@ class CoasterRepositoryTest extends CIUnitTestCase
             Coaster::KEY_ID => $coasterId,
             Coaster::KEY_STAFF => 10,
             Coaster::KEY_CLIENTS => 5000,
+            Coaster::KEY_CAPACITY => 32,
+            Coaster::KEY_SPEED => 1.2,
             Coaster::KEY_LENGTH => 1800,
-            Coaster::KEY_HOUR_1 => '8:00',
+            Coaster::KEY_HOUR_1 => '08:00',
             Coaster::KEY_HOUR_2 => '16:00',
         ];
 
@@ -82,7 +86,7 @@ class CoasterRepositoryTest extends CIUnitTestCase
         $this->assertEquals(10, $result->getNumberOfStaff());
         $this->assertEquals(5000, $result->getNumberOfClients());
         $this->assertEquals(1800, $result->getRouteLength());
-        $this->assertEquals('8:00', $result->getOpeningTime());
+        $this->assertEquals('08:00', $result->getOpeningTime());
         $this->assertEquals('16:00', $result->getClosingTime());
     }
 
@@ -107,14 +111,18 @@ class CoasterRepositoryTest extends CIUnitTestCase
             Coaster::KEY_ID => 'coaster1',
             Coaster::KEY_STAFF => 10,
             Coaster::KEY_CLIENTS => 5000,
+            Coaster::KEY_CAPACITY => 32,
+            Coaster::KEY_SPEED => 1.2,
             Coaster::KEY_LENGTH => 1800,
-            Coaster::KEY_HOUR_1 => '8:00',
+            Coaster::KEY_HOUR_1 => '08:00',
             Coaster::KEY_HOUR_2 => '16:00',
         ];
         $coaster2Data = [
             Coaster::KEY_ID => 'coaster2',
             Coaster::KEY_STAFF => 15,
             Coaster::KEY_CLIENTS => 6000,
+            Coaster::KEY_CAPACITY => 32,
+            Coaster::KEY_SPEED => 1.2,
             Coaster::KEY_LENGTH => 2000,
             Coaster::KEY_HOUR_1 => '9:00',
             Coaster::KEY_HOUR_2 => '17:00',
