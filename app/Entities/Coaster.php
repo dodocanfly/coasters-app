@@ -7,6 +7,8 @@ class Coaster
     public const KEY_ID = 'id';
     public const KEY_STAFF = 'liczba_personelu';
     public const KEY_CLIENTS = 'liczba_klientow';
+    public const KEY_CAPACITY = 'pojemnosc_wagonu';
+    public const KEY_SPEED = 'predkosc';
     public const KEY_LENGTH = 'dl_trasy';
     public const KEY_HOUR_1 = 'godziny_od';
     public const KEY_HOUR_2 = 'godziny_do';
@@ -14,6 +16,8 @@ class Coaster
     public static array $createRules = [
         self::KEY_STAFF => 'required|integer|greater_than[0]',
         self::KEY_CLIENTS => 'required|integer|greater_than[0]',
+        self::KEY_CAPACITY => 'required|integer|greater_than[0]',
+        self::KEY_SPEED => 'required|numeric|greater_than[0]',
         self::KEY_LENGTH => 'required|integer|greater_than[0]',
         self::KEY_HOUR_1 => 'required|valid_time',
         self::KEY_HOUR_2 => 'required|valid_time',
@@ -22,19 +26,23 @@ class Coaster
     public static array $updateRules = [
         self::KEY_STAFF => 'required|integer|greater_than[0]',
         self::KEY_CLIENTS => 'required|integer|greater_than[0]',
+        self::KEY_CAPACITY => 'required|integer|greater_than[0]',
+        self::KEY_SPEED => 'required|numeric|greater_than[0]',
         self::KEY_HOUR_1 => 'required|valid_time',
         self::KEY_HOUR_2 => 'required|valid_time',
     ];
 
-    private string $id;
+    private readonly string $id;
 
     public function __construct(
-        string         $id = null,
-        private int    $numberOfStaff = 0,
-        private int    $numberOfClients = 0,
-        private int    $routeLength = 0,
-        private string $openingTime = '',
-        private string $closingTime = ''
+        string                  $id = null,
+        private readonly int    $numberOfStaff = 0,
+        private readonly int    $numberOfClients = 0,
+        private readonly int    $wagonCapacity = 0,
+        private readonly float  $wagonSpeed = 0.0,
+        private readonly int    $routeLength = 0,
+        private readonly string $openingTime = '',
+        private readonly string $closingTime = ''
     ) {
         $this->id = $id ?? uniqid('coaster_');
     }
@@ -49,23 +57,19 @@ class Coaster
         return $this->numberOfStaff;
     }
 
-    public function setNumberOfStaff(int $numberOfStaff): self
-    {
-        $this->numberOfStaff = $numberOfStaff;
-
-        return $this;
-    }
-
     public function getNumberOfClients(): int
     {
         return $this->numberOfClients;
     }
 
-    public function setNumberOfClients(int $numberOfClients): self
+    public function getWagonCapacity(): int
     {
-        $this->numberOfClients = $numberOfClients;
+        return $this->wagonCapacity;
+    }
 
-        return $this;
+    public function getWagonSpeed(): float
+    {
+        return $this->wagonSpeed;
     }
 
     /** in meters */
@@ -74,35 +78,14 @@ class Coaster
         return $this->routeLength;
     }
 
-    public function setRouteLength(int $routeLength): self
-    {
-        $this->routeLength = $routeLength;
-
-        return $this;
-    }
-
     public function getOpeningTime(): string
     {
         return $this->openingTime;
     }
 
-    public function setOpeningTime(string $openingTime): self
-    {
-        $this->openingTime = $openingTime;
-
-        return $this;
-    }
-
     public function getClosingTime(): string
     {
         return $this->closingTime;
-    }
-
-    public function setClosingTime(string $closingTime): self
-    {
-        $this->closingTime = $closingTime;
-
-        return $this;
     }
 
     public function toArray(): array
@@ -111,6 +94,8 @@ class Coaster
             self::KEY_ID => $this->id,
             self::KEY_STAFF => $this->numberOfStaff,
             self::KEY_CLIENTS => $this->numberOfClients,
+            self::KEY_CAPACITY => $this->wagonCapacity,
+            self::KEY_SPEED => $this->wagonSpeed,
             self::KEY_LENGTH => $this->routeLength,
             self::KEY_HOUR_1 => $this->openingTime,
             self::KEY_HOUR_2 => $this->closingTime,
@@ -123,6 +108,8 @@ class Coaster
             $data[self::KEY_ID] ?? null,
             $data[self::KEY_STAFF] ?? 0,
             $data[self::KEY_CLIENTS] ?? 0,
+            $data[self::KEY_CAPACITY] ?? 0,
+            $data[self::KEY_SPEED] ?? 0.0,
             $data[self::KEY_LENGTH] ?? 0,
             $data[self::KEY_HOUR_1] ?? '',
             $data[self::KEY_HOUR_2] ?? ''
